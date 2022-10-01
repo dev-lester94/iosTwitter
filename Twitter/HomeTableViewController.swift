@@ -12,6 +12,7 @@ class HomeTableViewController: UITableViewController {
     
     var tweetArray = [NSDictionary]()
     var numberOfTweet: Int!
+    var maxId: Int64!
     
     let myRefreshControl = UIRefreshControl()
     
@@ -55,19 +56,17 @@ class HomeTableViewController: UITableViewController {
     func loadMoreTweets(){
         let myUrl = "https://api.twitter.com/1.1/statuses/home_timeline.json"
         
-        numberOfTweet = numberOfTweet + 20
         
-        let myParams = ["count":numberOfTweet]
+        
+        let myParams = ["count":numberOfTweet, "max_id": maxId] as [String : Any]
         
         TwitterAPICaller.client?.getDictionariesRequest(url: myUrl, parameters: myParams, success: { (tweets: [NSDictionary]) in
             
-            self.tweetArray.removeAll()
             for tweet in tweets {
                 self.tweetArray.append(tweet)
             }
             
             self.tableView.reloadData()
-            self.myRefreshControl.endRefreshing()
             
         }, failure: { (Error) in
             print("Could not retrieve tweet")
@@ -108,6 +107,7 @@ class HomeTableViewController: UITableViewController {
 
     override func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
         if indexPath.row+1 == tweetArray.count {
+            maxId = tweetArray[indexPath.row]["id"] as! Int64
             loadMoreTweets()
         }
     }
